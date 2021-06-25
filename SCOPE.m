@@ -66,6 +66,7 @@ options.soil_heat_method     = N(14);  % 0 - GAM=Soil_Inertia0(lambdas), 1 - GAM
 options.calc_rss_rbs          = N(15);  % 0 - fixed, 1 calc
 options.MoninObukhov        = N(16);
 options.save_spectral        = N(17);
+options.scale_precribed_spectra = N(18);
 
 if options.simulation>2 || options.simulation<0, fprintf('\n simulation option should be between 0 and 2 \r'); return, end
 options.Cca_function_of_Cab = 0; % this will change to 1 if Cca is not provided in the input.
@@ -242,7 +243,7 @@ atmfile = fullfile(path_input, 'radiationdata', F(4).FileName);
 if options.simulation == 1 && ~isempty(atmo_paths)
     atmfile = atmo_paths{1};
 end
-atmo = load_atmo(atmfile, spectral.SCOPEspec);
+atmo = load_atmo(atmfile, spectral.SCOPEspec, xyt.startDOY);
 
 %% 13. create output files
 [Output_dir, f, fnames] = create_output_files_binary(parameter_file, F, path_of_code, path_input, spectral,options);
@@ -313,7 +314,10 @@ for k = 1:telmax
         if options.simulation == 1 && ~isempty(atmo_paths) && k > 1
             atmfile_k = atmo_paths{k};
             if ~strcmp(atmfile_k, atmo_paths{k-1})
-                atmo = load_atmo(atmfile_k, spectral.SCOPEspec);
+                atmo = load_atmo(atmfile_k, spectral.SCOPEspec, xyt.t(k));
+            end
+            if options.scale_precribed_spectra == 1
+                atmo = load_atmo(atmfile_k, spectral.SCOPEspec, xyt.t(k));
             end
         end
         
